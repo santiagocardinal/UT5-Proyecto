@@ -54,10 +54,13 @@ public class Main {
         // 1) Generamos los datos con el generador --> 50 millones de productos, semilla 2026
         int[] ventas = GeneradorVentas.generarVentas(TAMANIO_CONSIGNA, 2026);
 
-        // 2) Prueba rápida: los seis algoritmos con 10.000 productos
-        medirTodos(ventas, 10_000);
+        // 2) PARTE A: explorar los datos (ceros, máximo, distintos, histograma)
+        explorar(ventas);
 
-        // 3) Todos contra todos: los seis algoritmos con tamaños que se duplican.
+        // 3) Prueba rápida: los seis algoritmos con 10.000 productos
+        // medirTodos(ventas, 10_000);
+
+        // 4) Todos contra todos: los seis algoritmos con tamaños que se duplican.
         //    El último parámetro dice si el algoritmo es cuadrático (O(n²)) o no (O(n log n)),
         //    lo usamos para estimar.
         /*medirAlgoritmo("Inserción directa", clasificador::insercionDirecta, true, ventas);
@@ -164,6 +167,9 @@ public class Main {
 
         int distintos = contarDistintos(ventas, maximo);
         System.out.println("Valores distintos: " + distintos);
+
+        mostrarHistograma(ventas);
+    
     }
 
 
@@ -235,12 +241,20 @@ public class Main {
         }
 
         System.out.println("Histograma:");
-        System.out.println("  0            -> " + vendieron0);
-        System.out.println("  1            -> " + vendieron1);
-        System.out.println("  2 a 9        -> " + de2a9);
-        System.out.println("  10 a 99      -> " + de10a99);
-        System.out.println("  100 a 999    -> " + de100a999);
-        System.out.println("  1000 a 9999  -> " + de1000a9999);
-        System.out.println("  10000 o más  -> " + de10000omas);
+        imprimirFila("0", vendieron0, ventas.length);
+        imprimirFila("1", vendieron1, ventas.length);
+        imprimirFila("2 a 9", de2a9, ventas.length);
+        imprimirFila("10 a 99", de10a99, ventas.length);
+        imprimirFila("100 a 999", de100a999, ventas.length);
+        imprimirFila("1000 a 9999", de1000a9999, ventas.length);
+        imprimirFila("10000 o más", de10000omas, ventas.length);
+    }
+
+    // Imprime una fila del histograma: el rango, la cantidad, el porcentaje
+    // y una barra de # (cada # es 1 % de los productos)
+    static void imprimirFila(String rango, int cantidad, int total) {
+        double porcentaje = cantidad * 100.0 / total;
+        String barra = "#".repeat((int) Math.round(porcentaje));
+        System.out.printf("  %-12s -> %10d  (%6.3f %%)  %s%n", rango, cantidad, porcentaje, barra);
     }
 }
