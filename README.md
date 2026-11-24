@@ -57,3 +57,55 @@ Trabajen con k = 10, 100, 1.000, 10.000 y 100.000, donde k es la cantidad de pro
 
 13. El recuadro se recalcula cada minuto. ¿Qué método recomiendan para k = 100 y cuánto tiempo de servidor por día ahorra respecto de ordenar todo con heapsort?
 14. ¿Y si las ventas llegaran de a una, en tiempo real, y el ranking tuviera que estar siempre actualizado? Describan, sin implementarlo, qué estructura mantendrían.
+
+----------
+## A1. ¿Qué se ordena y por qué clave? ¿Qué se necesita como resultado?
+
+Se ordena un arreglo de 50.000.000 de enteros. La **posición** `i` es la publicación `i`,y el **valor** es cuántas unidades vendió en la última hora. La **clave** de ordenamiento son las unidades vendidas, porque queremos los productos que más vendieron.
+
+**No hace falta el arreglo entero ordenado.** El recuadro muestra solo los 100 más vendidos (10 en el celular y 1.000 en el informe interno), o sea los **k mayores, ordenados del primero al último**. El orden de los otros 49.999.900 productos no nos importa.Por eso tiene sentido buscar formas de sacar solo los k mayores sin ordenar todo.
+
+Un detalle: si ordenamos el arreglo de valores, perdemos qué producto era cada uno, porque el valor se mueve de posición. En el sitio real habría que guardar también el número de publicación junto con las ventas. Para medir los algoritmos alcanza con los valores.
+
+### Restricciones que impone la situación
+
+- **Memoria:** 50 millones de `int` ocupan unos 200 MB, y el Medidor trabaja con copias.
+  Los seis algoritmos ordenan dentro del mismo arreglo, sin crear otro del mismo tamaño.
+  Quicksort usa además la pila para la recursión; por eso corremos con `-Xmx4g -Xss512m`.
+
+- **Estabilidad:** no hace falta. Dos productos con las mismas ventas valen lo mismo para el ranking, y da igual cuál quede primero. Si se quisiera un desempate fijo, se podría usar el número de publicación.
+- **Peor caso:** el ranking se recalcula cada minuto y compite por el servidor con el resto del sitio, así que importa que el tiempo sea predecible y no solo bueno en promedio.
+  Quicksort en el peor caso es O(n²) (por ejemplo, con datos ya ordenados y nuestro pivote).
+  Heapsort es siempre O(n log n), por eso es el «seguro».
+- **Costo de mover:** mover un `int` es barato, pero los algoritmos que mueven muchísimo igual pierden: inserción y burbuja hacen 18 millones de movimientos con solo 10.000 productos. En el sitio real se moverían pares (publicación, ventas), que siguen siendo baratos.
+
+## A3. ¿Influye que haya tantos valores repetidos?
+
+En los 50 millones de productos hay solo **6.440 valores distintos**, y el 72 % vendió 0 o 1: casi todo son repetidos. Para ver si eso cambia algo, ordenamos 10.000 elementos de dos formas y contamos las operaciones con los contadores de nuestro clasificador:
+
+- **Con repetidos:** los primeros 10.000 productos de las ventas.
+- **Sin repetidos:** 10.000 claves distintas al azar, de `GeneradorPagos.generarLote(10_000, 0, 2026).claves()`.
+
+| Algoritmo | Comparaciones con repetidos | Comparaciones sin repetidos | Movimientos con repetidos | Movimientos sin repetidos |
+|---|---|---|---|---|
+| Inserción directa | 18.204.013 | 24.847.582 | 18.194.016 | 24.837.589 |
+| Shellsort | 143.721 | 267.901 | 26.347 | 153.015 |
+| Burbuja | 49.995.000 | 49.995.000 | 18.194.016 | 24.837.589 |
+| Quicksort | 70.481 | 253.496 | 5.867 | 37.445 |
+| Selección directa | 49.995.000 | 49.995.000 | 9.985 | 9.991 |
+| Heapsort | 157.066 | 235.341 | 77.892 | 124.249 |
+
+**¿En cuáles no influye?**
+- **Burbuja y selección directa:** hacen exactamente las mismas comparaciones (49.995.000 = n·(n−1)/2) con repetidos o sin ellos, porque siempre comparan todos los pares que les tocan. Burbuja sí mueve menos, porque dos iguales no se intercambian, pero sigue comparando todo.
+
+**¿En cuáles sí influye?**
+- **Inserción directa:** un 27 % menos de operaciones. Un elemento deja de moverse cuando encuentra uno menor o igual, y con muchos iguales frena antes. Igual sigue siendo O(n²).
+- **Heapsort:** un 33 % menos de comparaciones. Al bajar un elemento en el heap, si es igual al hijo se queda donde está. Sigue siendo O(n log n).
+- **Shellsort:** casi la mitad de comparaciones y casi 6 veces menos movimientos.
+- **Quicksort:** es el que más gana, con 3,6 veces menos comparaciones y 6 veces menos movimientos.
+  Con nuestro pivote («el mayor de los dos primeros distintos»), cuando un rango tiene todos los valores iguales `obtenerPivote` devuelve −1 y ese rango no se sigue partiendo. Con tantos ceros y unos, hay rangos enormes que se resuelven de una sola vez.
+
+**Por qué pasa:** cuando dos valores son iguales, `menorQue` da falso y el elemento no se mueve.
+Eso le ahorra trabajo a todos los algoritmos menos a burbuja y selección, que comparan todos los pares igual.
+
+>Los repetidos también son un riesgo para quicksort. Con un pivote mal elegido (la mediana de tres sin arreglar), el pivote puede ser el mínimo del rango y el quicksort no termina, como mostramos en el contrato del pivote.
