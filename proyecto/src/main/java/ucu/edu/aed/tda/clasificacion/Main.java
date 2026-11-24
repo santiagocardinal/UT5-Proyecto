@@ -60,12 +60,13 @@ public class Main {
         // 3) Todos contra todos: los seis algoritmos con tamaños que se duplican.
         //    El último parámetro dice si el algoritmo es cuadrático (O(n²)) o no (O(n log n)),
         //    lo usamos para estimar.
-        medirAlgoritmo("Inserción directa", clasificador::insercionDirecta, true, ventas);
+        /*medirAlgoritmo("Inserción directa", clasificador::insercionDirecta, true, ventas);
         medirAlgoritmo("Shellsort", Main::ordenarConShell, false, ventas);
         medirAlgoritmo("Burbuja", clasificador::burbuja, true, ventas);
         medirAlgoritmo("Quicksort", clasificador::quicksort, false, ventas);
         medirAlgoritmo("Selección directa", clasificador::clasificacionDirecta, true, ventas);
         medirAlgoritmo("Heapsort", clasificador::heapsort, false, ventas);
+        */
     }
     
 
@@ -147,5 +148,99 @@ public class Main {
     // shell necesita además los incrementos, así que lo envolvemos en un método que recibe solo el arreglo (que es lo que pide el Medidor)
     static void ordenarConShell(int[] datos) {
         clasificador.shell(datos, TipoClasificador.incrementosPorDefecto(datos.length));
+    }
+
+    // Explora los datos: ceros, máximo, valores distintos e histograma
+    static void explorar(int[] ventas) {
+        System.out.println("===== PARTE A: EXPLORACIÓN =====");
+        System.out.println("Cantidad de productos: " + ventas.length);
+
+        int ceros = contarCeros(ventas);
+        System.out.println("Productos que vendieron 0: " + ceros);
+        System.out.println("Porcentaje de ceros: " + (ceros * 100.0 / ventas.length) + " %");
+
+        int maximo = buscarMaximo(ventas);
+        System.out.println("Máximo vendido: " + maximo);
+
+        int distintos = contarDistintos(ventas, maximo);
+        System.out.println("Valores distintos: " + distintos);
+    }
+
+
+    // Cuenta cuántos productos no vendieron nada
+    static int contarCeros(int[] ventas) {
+        int ceros = 0;
+        for (int i = 0; i < ventas.length; i++) {
+            if (ventas[i] == 0) {
+                ceros++;
+            }
+        }
+        return ceros;
+    }
+
+    // Busca el producto que más vendió
+    static int buscarMaximo(int[] ventas) {
+        int maximo = ventas[0];
+        for (int i = 1; i < ventas.length; i++) {
+            if (ventas[i] > maximo) {
+                maximo = ventas[i];
+            }
+        }
+        return maximo;
+    }
+
+    // Cuenta cuántos valores distintos hay.
+    // Usamos un arreglo de boolean donde la posición v dice si ya vimos el valor v.
+    // Se puede porque el máximo no es tan grande (1.000.000).
+    static int contarDistintos(int[] ventas, int maximo) {
+        boolean[] yaVisto = new boolean[maximo + 1];
+        int distintos = 0;
+        for (int i = 0; i < ventas.length; i++) {
+            int v = ventas[i];
+            if (!yaVisto[v]) {
+                yaVisto[v] = true;
+                distintos++;
+            }
+        }
+        return distintos;
+    }
+    // Histograma por rangos. Usamos rangos que crecen de a 10 porque casi todos
+    // venden 0 o 1 y muy pocos venden mucho (si los rangos fueran iguales no se ve nada).
+    static void mostrarHistograma(int[] ventas) {
+        int vendieron0 = 0;
+        int vendieron1 = 0;
+        int de2a9 = 0;
+        int de10a99 = 0;
+        int de100a999 = 0;
+        int de1000a9999 = 0;
+        int de10000omas = 0;
+
+        for (int i = 0; i < ventas.length; i++) {
+            int v = ventas[i];
+            if (v == 0) {
+                vendieron0++;
+            } else if (v == 1) {
+                vendieron1++;
+            } else if (v <= 9) {
+                de2a9++;
+            } else if (v <= 99) {
+                de10a99++;
+            } else if (v <= 999) {
+                de100a999++;
+            } else if (v <= 9999) {
+                de1000a9999++;
+            } else {
+                de10000omas++;
+            }
+        }
+
+        System.out.println("Histograma:");
+        System.out.println("  0            -> " + vendieron0);
+        System.out.println("  1            -> " + vendieron1);
+        System.out.println("  2 a 9        -> " + de2a9);
+        System.out.println("  10 a 99      -> " + de10a99);
+        System.out.println("  100 a 999    -> " + de100a999);
+        System.out.println("  1000 a 9999  -> " + de1000a9999);
+        System.out.println("  10000 o más  -> " + de10000omas);
     }
 }
