@@ -214,4 +214,41 @@ public class HeapSortTest extends TestCase {
 
         assertTrue(Arrays.equals(esperado, resultado));
     }
+     // ===================== TOP-K CON HEAP DE MÍNIMOS
+
+    public void testTopKHeapMinimo() {
+        int[] datos = {5, 8, 2, 15, 4, 12, 3};
+        int[] esperado = {15, 12, 8};
+
+        int[] resultado = clasificador.topKHeapMinimo(datos, 3);
+
+        assertTrue(Arrays.equals(esperado, resultado));
+    }
+
+    public void testTopKHeapMinimoValoresRepetidos() {
+        int[] datos = {0, 5, 5, 0, 10, 10, 1};
+        int[] esperado = {10, 10, 5, 5};
+
+        int[] resultado = clasificador.topKHeapMinimo(datos, 4);
+
+        assertTrue(Arrays.equals(esperado, resultado));
+    }
+
+    public void testTopKHeapMinimoNoModificaDatos() {
+        int[] datos = {5, 8, 2, 15, 4, 12, 3};
+        int[] copia = datos.clone();
+
+        clasificador.topKHeapMinimo(datos, 3);
+
+        assertTrue(Arrays.equals(copia, datos));
+    }
+
+    public void testLosDosTopKDanLoMismo() {
+        int[] datos = {0, 8, 3, 15, 0, 12, 3, 20, 1, 5};
+
+        int[] conHeapMinimo = clasificador.topKHeapMinimo(datos.clone(), 5);
+        int[] conHeapSort = clasificador.topKHeapSort(datos.clone(), 5);
+
+        assertTrue(Arrays.equals(conHeapSort, conHeapMinimo));
+    }
 }

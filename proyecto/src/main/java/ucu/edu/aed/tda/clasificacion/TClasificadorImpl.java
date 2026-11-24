@@ -266,6 +266,77 @@ public class TClasificadorImpl extends TClasificador {
         }
         return resultado;
     }
+     public int[] topKHeapMinimo(int[] datos, int k) {
+        if (k < 0 || k > datos.length) {
+            throw new IllegalArgumentException("Valor de k invalido");
+        }
+        int[] resultado = new int[k];
+        if (k == 0) {
+            return resultado;
+        }
+
+        int[] heap = new int[k];   // heap de mínimos, posiciones 0..tam-1
+        int tam = 0;
+
+        // 1) recorremos todos los productos una vez
+        for (int i = 0; i < datos.length; i++) {
+            int v = datos[i];
+            if (tam < k) {
+                // todavía no tenemos k: lo agregamos al final y lo subimos a su lugar
+                heap[tam] = v;
+                subirEnHeapMinimo(heap, tam);
+                tam++;
+            } else if (menorQue(heap[0], v)) {
+                // vendió más que el peor de los k: lo reemplaza y lo bajamos a su lugar
+                heap[0] = v;
+                movimientos++;
+                bajarEnHeapMinimo(heap, 0, tam);
+            }
+        }
+
+        // 2) sacamos los k del heap (salen del menor al mayor) y los ponemos de atrás para adelante,
+        //    así resultado queda del mayor al menor, igual que topKHeapSort
+        for (int i = k - 1; i >= 0; i--) {
+            resultado[i] = heap[0];
+            tam--;
+            heap[0] = heap[tam];
+            bajarEnHeapMinimo(heap, 0, tam);
+        }
+        return resultado;
+    }
+
+    // Sube el elemento de la posición i mientras sea menor que su padre
+    private void subirEnHeapMinimo(int[] heap, int i) {
+        while (i > 0) {
+            int padre = (i - 1) / 2;
+            if (menorQue(heap[i], heap[padre])) {
+                intercambiar(heap, i, padre);
+                i = padre;
+            } else {
+                return;
+            }
+        }
+    }
+
+    // Baja el elemento de la posición i mientras alguno de sus hijos sea menor que él
+    private void bajarEnHeapMinimo(int[] heap, int i, int tam) {
+        while (true) {
+            int izq = 2 * i + 1;
+            int der = 2 * i + 2;
+            int menor = i;
+            if (izq < tam && menorQue(heap[izq], heap[menor])) {
+                menor = izq;
+            }
+            if (der < tam && menorQue(heap[der], heap[menor])) {
+                menor = der;
+            }
+            if (menor == i) {
+                return;              // ya está en su lugar
+            }
+            intercambiar(heap, i, menor);
+            i = menor;
+        }
+    }
 
     @Override
     protected void desplazaElemento(int[] datos, int primero, int ultimo) {
