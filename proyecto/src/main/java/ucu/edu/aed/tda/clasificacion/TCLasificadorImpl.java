@@ -1,7 +1,7 @@
 
 package ucu.edu.aed.tda.clasificacion; 
  
-public class TCLasificadorImpl extends TClasificador { 
+public class TClasificadorImpl extends TClasificador { 
  
     // ===== CONTADORES =====
     public long comparaciones = 0;
