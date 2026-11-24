@@ -238,6 +238,35 @@ public class TClasificadorImpl extends TClasificador {
         }
     }
 
+    public int[] topKHeapSort(int[] datos, int k) {
+        int n = datos.length;
+
+        if (k < 0 || k > n) {
+            throw new IllegalArgumentException("Valor de k invalido");
+        }
+
+        int[] resultado = new int[k];
+
+        if (k == 0) {
+            return resultado;
+        }
+
+        for (int i = n / 2; i >= 1; i--) {
+            desplazaElemento(datos, i, n);
+        }
+
+        for (int i = 0; i < k; i++) {
+            resultado[i] = datos[0];
+            intercambiar(datos, 0, n - 1);
+            n--;
+
+            if (n > 1) {
+                desplazaElemento(datos, 1, n);
+            }
+        }
+        return resultado;
+    }
+
     @Override
     protected void desplazaElemento(int[] datos, int primero, int ultimo) {
         int actual = primero;
