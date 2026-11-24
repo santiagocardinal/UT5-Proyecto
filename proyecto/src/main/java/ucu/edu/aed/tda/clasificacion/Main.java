@@ -2,6 +2,7 @@ package ucu.edu.aed.tda.clasificacion;
 
 import ucu.edu.aed.tda.clasificacion.datos.GeneradorVentas;
 import ucu.edu.aed.tda.clasificacion.datos.Medidor;
+import ucu.edu.aed.tda.clasificacion.datos.GeneradorPagos;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -57,10 +58,20 @@ public class Main {
         // 2) PARTE A: explorar los datos (ceros, máximo, distintos, histograma)
         explorar(ventas);
 
-        // 3) Prueba rápida: los seis algoritmos con 10.000 productos
+        
+        // 3) PARTE A3: ¿influyen los repetidos?
+        //    Contamos las operaciones con 10.000 ventas (muchos repetidos)
+        //    y con 10.000 claves al azar (sin repetidos) para comparar.
+        int[] conRepetidos = Arrays.copyOf(ventas, 10_000);
+        int[] sinRepetidos = GeneradorPagos.generarLote(10_000, 0, 2026).claves();
+        contarOperaciones(conRepetidos, "CON repetidos (ventas)");
+        contarOperaciones(sinRepetidos, "SIN repetidos (al azar)");
+
+
+        // 4) Prueba rápida: los seis algoritmos con 10.000 productos
         // medirTodos(ventas, 10_000);
 
-        // 4) Todos contra todos: los seis algoritmos con tamaños que se duplican.
+        // 5) Todos contra todos: los seis algoritmos con tamaños que se duplican.
         //    El último parámetro dice si el algoritmo es cuadrático (O(n²)) o no (O(n log n)),
         //    lo usamos para estimar.
         /*medirAlgoritmo("Inserción directa", clasificador::insercionDirecta, true, ventas);
@@ -248,6 +259,49 @@ public class Main {
         imprimirFila("100 a 999", de100a999, ventas.length);
         imprimirFila("1000 a 9999", de1000a9999, ventas.length);
         imprimirFila("10000 o más", de10000omas, ventas.length);
+    }
+    
+    // Ordena una copia de los datos con cada algoritmo y muestra
+    // cuántas comparaciones y movimientos hizo (los contadores de nuestro clasificador)
+    static void contarOperaciones(int[] datos, String titulo) {
+        System.out.println("\n" + titulo + ":");
+        int[] copia;
+
+        copia = datos.clone();
+        clasificador.reiniciarContadores();
+        clasificador.insercionDirecta(copia);
+        System.out.println("  Inserción directa: comparaciones = " + clasificador.comparaciones
+                + ", movimientos = " + clasificador.movimientos);
+
+        copia = datos.clone();
+        clasificador.reiniciarContadores();
+        ordenarConShell(copia);
+        System.out.println("  Shellsort:         comparaciones = " + clasificador.comparaciones
+                + ", movimientos = " + clasificador.movimientos);
+
+        copia = datos.clone();
+        clasificador.reiniciarContadores();
+        clasificador.burbuja(copia);
+        System.out.println("  Burbuja:           comparaciones = " + clasificador.comparaciones
+                + ", movimientos = " + clasificador.movimientos);
+
+        copia = datos.clone();
+        clasificador.reiniciarContadores();
+        clasificador.quicksort(copia);
+        System.out.println("  Quicksort:         comparaciones = " + clasificador.comparaciones
+                + ", movimientos = " + clasificador.movimientos);
+
+        copia = datos.clone();
+        clasificador.reiniciarContadores();
+        clasificador.clasificacionDirecta(copia);
+        System.out.println("  Selección directa: comparaciones = " + clasificador.comparaciones
+                + ", movimientos = " + clasificador.movimientos);
+
+        copia = datos.clone();
+        clasificador.reiniciarContadores();
+        clasificador.heapsort(copia);
+        System.out.println("  Heapsort:          comparaciones = " + clasificador.comparaciones
+                + ", movimientos = " + clasificador.movimientos);
     }
 
     // Imprime una fila del histograma: el rango, la cantidad, el porcentaje
