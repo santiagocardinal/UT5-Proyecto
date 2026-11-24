@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "ucu.edu.aed.tda.clasificacion.Main",
+            "vmArgs": "-Xmx4g -Xss512m"
+        },
+        {
+            "type": "java",
+            "name": "DemoPivote",
+            "request": "launch",
+            "mainClass": "ucu.edu.aed.tda.clasificacion.DemoPivote",
+            "vmArgs": "-Xmx4g -Xss512m"
+        }
+    ]
+}
