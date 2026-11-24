@@ -56,16 +56,16 @@ public class Main {
         int[] ventas = GeneradorVentas.generarVentas(TAMANIO_CONSIGNA, 2026);
 
         // 2) PARTE A: explorar los datos (ceros, máximo, distintos, histograma)
-        explorar(ventas);
+        //explorar(ventas);
 
         
         // 3) PARTE A3: ¿influyen los repetidos?
         //    Contamos las operaciones con 10.000 ventas (muchos repetidos)
         //    y con 10.000 claves al azar (sin repetidos) para comparar.
-        int[] conRepetidos = Arrays.copyOf(ventas, 10_000);
-        int[] sinRepetidos = GeneradorPagos.generarLote(10_000, 0, 2026).claves();
-        contarOperaciones(conRepetidos, "CON repetidos (ventas)");
-        contarOperaciones(sinRepetidos, "SIN repetidos (al azar)");
+        //int[] conRepetidos = Arrays.copyOf(ventas, 10_000);
+        //int[] sinRepetidos = GeneradorPagos.generarLote(10_000, 0, 2026).claves();
+        //contarOperaciones(conRepetidos, "CON repetidos (ventas)");
+        //contarOperaciones(sinRepetidos, "SIN repetidos (al azar)");
 
 
         // 4) Prueba rápida: los seis algoritmos con 10.000 productos
@@ -81,6 +81,9 @@ public class Main {
         medirAlgoritmo("Selección directa", clasificador::clasificacionDirecta, true, ventas);
         medirAlgoritmo("Heapsort", clasificador::heapsort, false, ventas);
         */
+       // 6) PARTE C8: los k mayores sin ordenar todo
+        verificarTopK(ventas);
+        medirTopK(ventas);
     }
     
 
@@ -310,5 +313,49 @@ public class Main {
         double porcentaje = cantidad * 100.0 / total;
         String barra = "#".repeat((int) Math.round(porcentaje));
         System.out.printf("  %-12s -> %10d  (%6.3f %%)  %s%n", rango, cantidad, porcentaje, barra);
+    }
+    
+    // ===================================================================== PARTE C
+    // Los valores de k que pide la consigna
+    static final int[] VALORES_K = {10, 100, 1_000, 10_000, 100_000};
+
+    // Verifica que los dos métodos den lo mismo que los últimos k del arreglo ordenado.
+    static void verificarTopK(int[] ventas) {
+        System.out.println("\n===== PARTE C: VERIFICACIÓN =====");
+
+        // ordenamos una copia de todo el arreglo (con nuestro quicksort, que es el más rápido)
+        int[] ordenado = ventas.clone();
+        clasificador.quicksort(ordenado);
+
+        for (int k : VALORES_K) {
+            // los k mayores son los últimos k del ordenado, pero los queremos del mayor al menor
+            int[] esperado = new int[k];
+            for (int i = 0; i < k; i++) {
+                esperado[i] = ordenado[ordenado.length - 1 - i];
+            }
+
+            int[] conHeapSort = clasificador.topKHeapSort(ventas.clone(), k);  // clone: topKHeapSort desordena
+            int[] conHeapMinimo = clasificador.topKHeapMinimo(ventas, k);
+
+            boolean okHeapSort = Arrays.equals(esperado, conHeapSort);
+            boolean okHeapMinimo = Arrays.equals(esperado, conHeapMinimo);
+            System.out.println("  k = " + k + ":  heapsort parcial " + (okHeapSort ? "OK" : "FALLA")
+                    + ",  heap de mínimos " + (okHeapMinimo ? "OK" : "FALLA")
+                    + "   (el k-ésimo mayor vendió " + esperado[k - 1] + ")");
+        }
+    }
+
+     static void medirTopK(int[] ventas) {
+        System.out.println("\n===== PARTE C8: TIEMPOS (mediana de 3 corridas, en ms) =====");
+        for (int k : VALORES_K) {
+            long[] tiempos = Medidor.medirNanos(datos -> clasificador.topKHeapSort(datos, k), ventas, 3, 1, false);
+            double msHeapSort = Medidor.mediana(tiempos) / 1_000_000.0;
+
+            tiempos = Medidor.medirNanos(datos -> clasificador.topKHeapMinimo(datos, k), ventas, 3, 1, false);
+            double msHeapMinimo = Medidor.mediana(tiempos) / 1_000_000.0;
+
+            System.out.println("  k = " + k + ":  heapsort parcial = " + msHeapSort
+                    + " ms,  heap de mínimos = " + msHeapMinimo + " ms");
+        }
     }
 }
