@@ -84,4 +84,31 @@ public class MedicionDatosAleatoriosTest extends TestCase {
             );
         }
     }
+    public void testTopKHeapMinimoDatosAleatorios() {
+
+        int[] datos = GeneradorPagos.generarLote(
+                200_000, 0, 2026
+        ).claves();
+
+        int[] ordenado = datos.clone();
+        Arrays.sort(ordenado);
+
+        for (int k : MedicionDatosAleatorios.VALORES_K) {
+
+            int[] esperado = new int[k];
+
+            for (int i = 0; i < k; i++) {
+                esperado[i] = ordenado[ordenado.length - 1 - i];
+            }
+
+            int[] resultado = clasificador.topKHeapMinimo(
+                    datos.clone(), k
+            );
+
+            assertTrue(
+                    "Resultado incorrecto para k = " + k,
+                    Arrays.equals(esperado, resultado)
+            );
+        }
+    }
 }

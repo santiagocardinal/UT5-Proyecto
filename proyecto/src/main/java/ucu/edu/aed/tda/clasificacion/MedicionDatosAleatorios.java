@@ -1,16 +1,13 @@
 package ucu.edu.aed.tda.clasificacion;
 
 import ucu.edu.aed.tda.clasificacion.datos.GeneradorPagos;
-import ucu.edu.aed.tda.clasificacion.datos.Medidor;
 import java.util.Arrays;
 
 public class MedicionDatosAleatorios {
 
     static final int TAMANIO_CONSIGNA = 50_000_000;
     static final long SEMILLA = 2026;
-    static final int[] VALORES_K = {10, 100, 1_000, 10_000, 100_000};
-    static final int REPETICIONES = 3;
-    static final int CALENTAMIENTOS = 1;
+    static final int[] VALORES_K = Main.VALORES_K;
 
     public static void main(String[] args) {
 
@@ -24,8 +21,8 @@ public class MedicionDatosAleatorios {
         System.out.println("Semilla: " + SEMILLA);
 
         medirOrdenamientos(datos);
-        verificarTopKHeapSort(datos);
-        medirTopKHeapSort(datos);
+        verificarTopK(datos);
+        Main.medirTopK(datos);
     }
 
     static void medirOrdenamientos(int[] datos) {
@@ -69,33 +66,11 @@ public class MedicionDatosAleatorios {
         );
     }
 
-    static void medirTopKHeapSort(int[] datos) {
+    static void verificarTopK(int[] datos) {
 
         TClasificadorImpl clasificador = new TClasificadorImpl();
 
-        System.out.println("\n===== TOP-K HEAPSORT PARCIAL =====");
-
-        for (int k : VALORES_K) {
-
-            long[] tiempos = Medidor.medirNanos(
-                    copia -> clasificador.topKHeapSort(copia, k),
-                    datos,
-                    REPETICIONES,
-                    CALENTAMIENTOS,
-                    false
-            );
-
-            double medianaMs = Medidor.mediana(tiempos) / 1_000_000.0;
-
-            System.out.println("k = " + k + " -> " + medianaMs + " ms");
-        }
-    }
-
-    static void verificarTopKHeapSort(int[] datos) {
-
-        TClasificadorImpl clasificador = new TClasificadorImpl();
-
-        System.out.println("\n===== VERIFICACION TOP-K HEAPSORT =====");
+        System.out.println("\n===== VERIFICACION TOP-K =====");
 
         int[] ordenado = datos.clone();
         Arrays.sort(ordenado);
@@ -108,15 +83,29 @@ public class MedicionDatosAleatorios {
                 esperado[i] = ordenado[ordenado.length - 1 - i];
             }
 
-            int[] resultado = clasificador.topKHeapSort(datos.clone(), k);
+            int[] resultadoHeapSort = clasificador.topKHeapSort(
+                    datos.clone(), k
+            );
 
-            if (!Arrays.equals(esperado, resultado)) {
+            int[] resultadoHeapMinimo = clasificador.topKHeapMinimo(
+                    datos.clone(), k
+            );
+
+            if (!Arrays.equals(esperado, resultadoHeapSort)) {
                 throw new IllegalStateException(
-                        "Resultado incorrecto para k = " + k
+                        "Heapsort parcial incorrecto para k = " + k
                 );
             }
 
-            System.out.println("Verificacion k = " + k + ": OK");
+            if (!Arrays.equals(esperado, resultadoHeapMinimo)) {
+                throw new IllegalStateException(
+                        "Heap minimo incorrecto para k = " + k
+                );
+            }
+
+            System.out.println(
+                    "k = " + k + ": Heapsort parcial OK, Heap minimo OK"
+            );
         }
     }
 }
