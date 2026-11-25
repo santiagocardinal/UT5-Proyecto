@@ -8,8 +8,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Random;
 
-// Tests de shellsort.
-// Está en el mismo paquete que TClasificadorImpl porque shell no es público.
 public class ShellSortTest {
 
     private TClasificadorImpl clasificador;

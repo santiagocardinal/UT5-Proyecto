@@ -8,8 +8,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Random;
 
-// Tests de burbuja.
-// Está en el mismo paquete que TClasificadorImpl porque burbuja no es público.
 public class BurbujaTest {
 
     private TClasificadorImpl clasificador;

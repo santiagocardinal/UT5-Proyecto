@@ -8,8 +8,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Random;
 
-// Tests de inserción directa.
-// Está en el mismo paquete que TClasificadorImpl porque insercionDirecta no es público.
 public class InsercionDirectaTest {
 
     private TClasificadorImpl clasificador;

@@ -8,8 +8,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Random;
 
-// Tests de quicksort, de nuestro obtenerPivote y de nuestra particion.
-// Está en el mismo paquete que TClasificadorImpl porque obtenerPivote y particion son protected.
 public class QuickSortTest {
 
     private TClasificadorImpl clasificador;
